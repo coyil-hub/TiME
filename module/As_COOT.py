@@ -18,15 +18,13 @@ class AsCOOT(nn.Module):
         m2 = torch.sum(pi_dual, dim=0, keepdim=True)
 
         if pi_dual.shape[0] == X.shape[1] and pi_dual.shape[1] == Y.shape[1]:
-            # C_s calculation (N, M)
             r_pi_f = torch.sum(pi_dual, dim=1).view(-1, 1)
             c_pi_f = torch.sum(pi_dual, dim=0).view(1, -1)
             t1 = (X ** 2) @ r_pi_f
             t2 = (Y ** 2) @ c_pi_f.T
-            const_term = t1 + t2.T  # Broadcasting
+            const_term = t1 + t2.T 
             cross_term = -2 * (X @ pi_dual @ Y.T)
         else:
-            # C_f calculation (d1, d2)
             r_pi_s = torch.sum(pi_dual, dim=1).view(-1, 1)
             c_pi_s = torch.sum(pi_dual, dim=0).view(1, -1)
             t1 = (X.T ** 2) @ r_pi_s
@@ -44,7 +42,7 @@ class AsCOOT(nn.Module):
         if c_max > c_min + 1e-8:
             C_norm = (C - c_min) / (c_max - c_min)
         else:
-            C_norm = torch.zeros_like(C) 
+            C_norm = torch.zeros_like(C)
 
 
         K = torch.exp(-C_norm / self.epsilon)
@@ -58,11 +56,9 @@ class AsCOOT(nn.Module):
             gamma = rho / (rho + self.epsilon)
 
         for _ in range(self.max_iter_inner):
-            # Row Update (Sample Side - Soft)
             Kb = K @ b
             a = (mu / (Kb + 1e-16)) ** gamma
 
-            # Col Update (Expert Side - Hard)
             KTa = K.T @ a
             if is_balanced_nu:
                 b = nu / (KTa + 1e-16)
@@ -87,7 +83,6 @@ class AsCOOT(nn.Module):
         pi_f = mu_f.unsqueeze(1) @ nu_f.unsqueeze(0)
 
         for i in range(self.max_iter_outer):
-            # Step A: Update pi_s
             C_s = self.get_coot_cost(X, Y, pi_f)
 
             if i == 0:
@@ -97,13 +92,11 @@ class AsCOOT(nn.Module):
             mass_ratio = pi_f.sum() / (pi_s_new.sum() + 1e-16)
             pi_s = pi_s_new * mass_ratio
 
-            # Step B: Update pi_f
             C_f = self.get_coot_cost(X, Y, pi_s)
             pi_f_new = self.s_uot_sinkhorn(C_f, mu_f, nu_f, rho=float('inf'), is_balanced_nu=True)
             mass_ratio_f = pi_s.sum() / (pi_f_new.sum() + 1e-16)
             pi_f = pi_f_new * mass_ratio_f
 
         return pi_s, pi_f
-
 
 
