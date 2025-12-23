@@ -1,4 +1,3 @@
-# utils/moe_lora.py
 import types
 import torch
 import torch.nn as nn
@@ -110,4 +109,5 @@ def print_mem(prefix=""):
 
     print(f"[{prefix}] allocated={allocated:.2f}GB | "
           f"reserved={reserved:.2f}GB | "
+
           f"max_alloc={max_alloc:.2f}GB")
