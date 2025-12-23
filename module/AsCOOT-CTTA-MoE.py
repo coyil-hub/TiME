@@ -60,7 +60,7 @@ def continual_test_time_adaptation(args, model, tokenizer, routed_experts,
         device_map="auto"
     )
 
-    # S-U-COOT
+    # As-COOT
     solver = AsCOOT(epsilon=args.epsilon, rho_x=0.1, max_iter_outer=50, max_iter_inner=200)
 
     # prepare expert cache if encoders provided
@@ -243,7 +243,7 @@ def continual_test_time_adaptation(args, model, tokenizer, routed_experts,
                     model.eval()
                     continue
 
-                ## S-UCOOT hook (Modify the routing logits)
+                ## As-COOT hook (Modify the routing logits)
                 hooks = []
                 train_gate_logits = {}
 
@@ -358,6 +358,4 @@ def continual_test_time_adaptation(args, model, tokenizer, routed_experts,
         all_task_results[task_name] = summary
 
     return all_task_results
-
-
 
