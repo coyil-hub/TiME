@@ -6,7 +6,7 @@ def construct_context(
         requests_list,
         tokenizer,
         model,
-        task_family,   # NEW
+        task_family, 
         device="cuda",
 ):
     if task_family == "discriminative":
@@ -59,12 +59,9 @@ def construct_context(
         return final_sentences
 
     elif task_family == "generative":
-        # 每个 doc 只有一个 context
         final_sentences = []
         for requests in requests_list:
-            # print(requests)
-            # generate_until 任务：第一个 request 就是完整 prompt
-            # req = requests[0]
             context, _ = requests.arguments
             final_sentences.append(context)
+
         return final_sentences
