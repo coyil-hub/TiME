@@ -1,7 +1,5 @@
 
 # -*- coding: utf-8 -*-
-# @Author: pingzhili
-# @Time: 2024/2/18
 import json
 import os
 import time
