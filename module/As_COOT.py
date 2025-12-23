@@ -5,14 +5,7 @@ import torch.nn.functional as F
 
 class AsCOOT(nn.Module):
     def __init__(self, epsilon=0.01, rho_x=5.0, max_iter_outer=5, max_iter_inner=100):
-        """
-        Args:
-            epsilon: 建议调小，例如 0.01，以增加分配的尖锐度。
-            rho_x: 样本侧松弛系数。
-                   值越大 -> 越接近标准 OT (所有样本都保留)。
-                   值越小 -> 允许丢弃更多样本。
-                   建议先设为 5.0 或 10.0，观察行和是否过于接近 0。
-        """
+
         super().__init__()
         self.epsilon = epsilon
         self.rho_x = rho_x
@@ -51,7 +44,7 @@ class AsCOOT(nn.Module):
         if c_max > c_min + 1e-8:
             C_norm = (C - c_min) / (c_max - c_min)
         else:
-            C_norm = torch.zeros_like(C)  # 避免全0导致的错误
+            C_norm = torch.zeros_like(C) 
 
 
         K = torch.exp(-C_norm / self.epsilon)
@@ -111,5 +104,6 @@ class AsCOOT(nn.Module):
             pi_f = pi_f_new * mass_ratio_f
 
         return pi_s, pi_f
+
 
 
