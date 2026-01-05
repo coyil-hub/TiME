@@ -100,8 +100,7 @@ def continual_test_time_adaptation(args, model, tokenizer, routed_experts,
         task = task_dict[task_name]
         docs = list(task.validation_docs())
         n_examples = len(docs)
-        post_acc_list =  []
-        post_stderr_list = []
+        pre_acc_list, post_acc_list = [], []
         memory_list = []
         time_list = []
 
@@ -113,7 +112,24 @@ def continual_test_time_adaptation(args, model, tokenizer, routed_experts,
             batch_indices = list(range(i, min(i + batch_size, n_examples)))
             samples_dict = {task_name: batch_indices}
 
+            # ---- 1. Pre-eval (eval 模式, no grad) ----
+            with torch.no_grad():
+                pre_results = simple_evaluate(
+                    model=lm_model,
+                    tasks=[task_name],
+                    samples=samples_dict,
+                    batch_size=len(batch_docs),
+                    num_fewshot=0,
+                    random_seed=0,
+                    torch_random_seed=0,
+                )
+            pre_task_result = pre_results.get('results', {}).get(task_name)
+            if pre_task_result is None:
+                print(f"[Warning] task {task_name} not in pre_results, skipping batch")
+                continue
 
+            pre_acc, pre_stderr = get_main_metric(task, pre_task_result)
+            pre_acc_list.append(pre_acc)
             # ---- 1. TTA: entropy minimization ----
             model.train()
 
@@ -269,7 +285,6 @@ def continual_test_time_adaptation(args, model, tokenizer, routed_experts,
                 for h in hooks:
                     h.remove()
 
-
                 trainable_params = [p for n, p in model.named_parameters() if p.requires_grad]
                 if len(trainable_params) == 0:
                     print("trainable params == 0")
@@ -288,7 +303,9 @@ def continual_test_time_adaptation(args, model, tokenizer, routed_experts,
                     for name, p in model.named_parameters():
                         if p.requires_grad and name in para_initial:
                             reg_loss = reg_loss + torch.norm(p - para_initial[name].to(p.device)) ** 2
-
+                            mask = (torch.rand_like(p) < 0.01).float()
+                            init_val = para_initial[name].to(device)
+                            p.data = torch.where(mask == 1, init_val, p.data)
 
                     l2_lambda = 0.1
                     loss = loss_entropy + l2_lambda * reg_loss
@@ -303,31 +320,7 @@ def continual_test_time_adaptation(args, model, tokenizer, routed_experts,
                 torch.cuda.empty_cache()
                 model.eval()
 
-            # ---- 2. Post-eval (no grad) ----
-            with torch.no_grad():
-                post_results = simple_evaluate(
-                    model=lm_model,
-                    tasks=[task_name],
-                    samples=samples_dict,
-                    batch_size=len(batch_docs),
-                    num_fewshot=0,
-                    random_seed=0,
-                    torch_random_seed=0,
-                )
-
-            task_result_post = post_results.get('results', {}).get(task_name)
-            if task_result_post is None:
-                continue
             time_list.append((time.time()-start_time) / batch_size)
-
-            post_acc, post_stderr = get_main_metric(task, task_result_post)
-            post_acc_list.append(post_acc)
-
-            post_stderr_list.append(post_stderr)
-
-            # for h in hooks:
-            #     h.remove()
-
             step_counter += 1
 
         if torch.cuda.is_available():
@@ -338,7 +331,7 @@ def continual_test_time_adaptation(args, model, tokenizer, routed_experts,
         # ---- 3. Summary ----
         summary = {
             "task": task_name,
-            "post_acc_mean": sum(post_acc_list) / len(post_acc_list) if post_acc_list else 0.0,
+            "pre_acc_mean": sum(pre_acc_list) / len(pre_acc_list) if pre_acc_list else 0.0,
             "cuda memory (G)": sum(memory_list) / len(memory_list) if memory_list else 0.0,
             "time / sample": sum(time_list) / len(time_list) if time_list else 0.0,
         }
@@ -346,5 +339,6 @@ def continual_test_time_adaptation(args, model, tokenizer, routed_experts,
         all_task_results[task_name] = summary
 
     return all_task_results
+
 
 
