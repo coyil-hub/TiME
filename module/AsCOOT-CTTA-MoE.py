@@ -145,19 +145,7 @@ def continual_test_time_adaptation(args, model, tokenizer, routed_experts,
             )
             input_ids = encoded["input_ids"].to(device)
             attention_mask = encoded["attention_mask"].to(device)
-
-            # ---- confidence filter ----
-            with torch.no_grad():
-                outputs1 = model(input_ids=input_ids, attention_mask=attention_mask)
-                probs = torch.softmax(outputs1.logits, dim=-1)
-                max_conf, _ = torch.max(probs, dim=-1)  # [B, T]
-                token_conf_mask = (max_conf >= 0.5).float()
-                valid_ratio = token_conf_mask.sum(dim=-1) / (attention_mask.sum(dim=-1) + 1e-12)
-                valid_count = token_conf_mask.sum(dim=-1)
-                sample_mask = (valid_ratio >= 0.3) & (valid_count >= 8)
-                selected_indices = sample_mask.nonzero(as_tuple=True)[0]
-
-                # selected_indices = torch.arange(input_ids.size(0))
+            selected_indices = torch.arange(input_ids.size(0))
 
             selected_total += len(selected_indices)
             start_time = time.time()
@@ -358,4 +346,5 @@ def continual_test_time_adaptation(args, model, tokenizer, routed_experts,
         all_task_results[task_name] = summary
 
     return all_task_results
+
 
