@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:1
 
 accelerate launch --config_file static/finetune_config.yaml \
-  --main_process_port 0 hcsmoe/merging-qwen.py \
+  --main_process_port 0 moe-qwen.py \
   --model_name="./Qwen1.5-MoE-A2.7B-Chat" \
   --task="winogrande,arc_challenge,arc_easy,boolq,openbookqa,rte,xquad_zh,xquad_es" \
   --train_batch_size=8 \
