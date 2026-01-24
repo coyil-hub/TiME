@@ -15,9 +15,6 @@ from module.AsCOOT-CTTA-MoE import continual_test_time_adaptation
 from module.Sersa_module import ExpertEncoder, TrainableSampleEncoder, extract_adapter_params_for_experts
 logger = logging.getLogger(__name__)
 
-###############################
-#  Helper class and functions #
-###############################
 class Args:
     def __init__(
         self,
