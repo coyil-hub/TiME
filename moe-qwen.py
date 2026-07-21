@@ -125,7 +125,36 @@ def run_moe(
     ### Hooking routed experts
     routed_experts = {}
     register_layer_router_hook(model, routed_experts, layers_to_track=[0], topk=2)
-
+    
+    ### Training Sersa
+    max_samples = 5000
+    dataset = C4Dataset("./data/c4-train.00000-of-01024.json", tokenizer, max_len=512, max_samples=max_samples)
+    dataloader_for_Sersa = DataLoader(dataset, batch_size=1, shuffle=True)
+    sersa_path = f'./Sersa_outputs/posneg_{max_samples}.pt'
+    # sersa_path = f'./test/posneg_{max_samples}.pt'
+    # _ = build_pos_neg_sets(
+    #     model=model,
+    #     dataloader_for_Sersa=dataloader_for_Sersa,
+    #     routed_experts_dict=routed_experts,
+    #     layers_to_use=[0],
+    #     topk=1,
+    #     save_path=sersa_path,
+    #     device=next(model.parameters()).device,
+    #     max_samples=50000
+    # )
+    # trainer = SersaTrainer(
+    #     posneg_path=sersa_path,
+    #     model=model,
+    #     dataloader_for_Sersa=dataloader_for_Sersa,
+    #     layers_to_use=[0],
+    #     embedding_dim=256,
+    #     batch_size=256,
+    #     lr=1e-4,
+    #     device=next(model.parameters()).device,
+    #     encoder_name='./all-MiniLM-L6-v2',
+    #     save_dir=f'./Sersa_outputs/sersa_{max_samples}_ckpt'
+    # )
+    # trainer.train(epochs=5, temperature=0.2, cluster_G=50, lambda_cluster=1.0)
 
     # ### CTTA-MoE
     ckpt_path = f"./Sersa_outputs/sersa_{5000}_ckpt/final.pt"
