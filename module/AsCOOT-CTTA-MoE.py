@@ -161,6 +161,7 @@ def continual_test_time_adaptation(args, model, tokenizer, routed_experts,
             )
             input_ids = encoded["input_ids"].to(device)
             attention_mask = encoded["attention_mask"].to(device)
+            
             selected_indices = torch.arange(input_ids.size(0))
 
             selected_total += len(selected_indices)
