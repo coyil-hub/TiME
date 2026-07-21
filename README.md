@@ -17,3 +17,14 @@ We provide the code script in `scripts/run_moe.sh`. Change the setting in those 
 ```
 bash ./scripts/run_moe.sh
 ```
+
+
+## Citation
+```
+@misc{liu2026time,
+title={Ti{ME}: Test-Time Mixture-of-Experts Routing via Asymmetric {CO}-Optimal Transport for Continual Test-Time Adaptation},
+author={Tianlun Liu and Zhiliang Tian and Zhen Huang and Tianle Liu and Xingzhi Zhou and Feng Liu and Dongsheng Li},
+booktitle={Forty-third International Conference on Machine Learning},
+year={2026}
+}
+```
