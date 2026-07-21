@@ -110,6 +110,14 @@ def run_moe(
 
     ### Injecting LoRA
     model = inject_lora_into_moe(model, r=16, alpha=16)
+    lora_state = torch.load("./moe_lora_trained/lora_only.pth", map_location="cpu")
+    for key, lora_state in lora_state.items():
+        # key: 'layer12.expert3'
+        parts = key.replace("layer", "").replace("expert", "").split(".")
+        layer_idx = int(parts[0])
+        expert_idx = int(parts[1])
+        expert = model.model.layers[layer_idx].mlp.experts[expert_idx]
+        expert.lora.load_state_dict(lora_state)
 
     ### Freezing grad
     freeze_non_lora_params(model)
