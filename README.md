@@ -8,11 +8,11 @@ Our paper, **TiME: Test-Time Mixture-of-Experts Routing via Asymmetric CO-Optima
 ## Dataset Preparation
 Please download the C4 training data c4-train.00000-of-01024.json from [allenai/c4](https://huggingface.co/datasets/allenai/c4/blob/main/en/c4-train.00000-of-01024.json.gz).
 
-Then save it to path `data/c4-train.00000-of-01024.json`.
+Then save it to the path `data/c4-train.00000-of-01024.json`.
 
 
 ## Experiments
-We provide the code script in `scripts/run_moe.sh`. Change the setting in those files. Run the script file as follows.
+We provide the code script in `scripts/run_moe.sh`. Change the settings in those files. Run the script file as follows.
 
 ```
 bash ./scripts/run_moe.sh
