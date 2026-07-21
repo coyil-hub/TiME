@@ -131,7 +131,6 @@ def run_moe(
     dataset = C4Dataset("./data/c4-train.00000-of-01024.json", tokenizer, max_len=512, max_samples=max_samples)
     dataloader_for_Sersa = DataLoader(dataset, batch_size=1, shuffle=True)
     sersa_path = f'./Sersa_outputs/posneg_{max_samples}.pt'
-    # sersa_path = f'./test/posneg_{max_samples}.pt'
     # _ = build_pos_neg_sets(
     #     model=model,
     #     dataloader_for_Sersa=dataloader_for_Sersa,
